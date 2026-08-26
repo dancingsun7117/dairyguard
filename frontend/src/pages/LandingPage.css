@@ -1,0 +1,806 @@
+/* ==========================================================================
+   DairyGuard - Final Visual Implementation CSS
+   Single Source of Truth: Approved Visual Reference
+   ========================================================================== */
+
+:root {
+  /* Exact Reference Palette */
+  --dg-dark-olive: #242D19;
+  --dg-olive: #343E23;
+  --dg-olive-mid: #465331;
+  --dg-olive-light: #5A6941;
+  --dg-sage: #8F9D77;
+  
+  --dg-khaki-bg: #DDD7C8;
+  --dg-khaki-dark: #CDC6B4;
+  --dg-khaki-border: #C8C0AC;
+  --dg-sand-card: #E8E2D3;
+  --dg-sand-card-subtle: #F0EBE0;
+  
+  --dg-gold: #C59B5A;
+  --dg-gold-light: #D8B57D;
+  --dg-gold-muted: #B79754;
+  
+  --dg-text-dark: #272E1B;
+  --dg-text-muted: #565E49;
+  --dg-text-cream: #F5EFE4;
+  --dg-text-subtle: #D8D2C4;
+  
+  /* Fonts */
+  --font-serif: 'Cormorant Garamond', 'Playfair Display', 'DM Serif Display', Georgia, serif;
+  --font-sans: 'Inter', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Base Reset & Typography */
+.dg-landing-page {
+  font-family: var(--font-sans);
+  color: var(--dg-text-dark);
+  background-color: var(--dg-khaki-bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.dg-landing-page *,
+.dg-landing-page *::before,
+.dg-landing-page *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ==========================================================================
+   1. HERO SECTION
+   ========================================================================== */
+.dg-hero {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #242D19;
+  background-image: url('/hero-dairy.png');
+  background-repeat: no-repeat;
+  background-position: center right;
+  background-size: cover;
+  color: var(--dg-text-cream);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px 56px 48px 56px;
+  overflow: hidden;
+}
+
+/* Subtle dark olive-green gradient on the left side so the headline is readable,
+   leaving the right side completely natural to showcase the farmer, milk cans, buffaloes, and India map */
+.dg-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 58%;
+  background: linear-gradient(
+    90deg,
+    rgba(34, 43, 23, 0.92) 0%,
+    rgba(34, 43, 23, 0.80) 40%,
+    rgba(34, 43, 23, 0.35) 75%,
+    rgba(34, 43, 23, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Top Navigation Bar - Ultra-Faint Almost Transparent Glass Layer */
+.dg-hero-nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 28px;
+  background: rgba(245, 239, 228, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+.dg-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--dg-text-cream);
+  transition: opacity 0.2s ease;
+}
+
+.dg-nav-brand:hover {
+  opacity: 0.92;
+}
+
+.dg-navbar-shield-wrap {
+  width: 44px;
+  height: 48px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dg-navbar-shield-img {
+  width: 56px;
+  height: auto;
+  margin-top: -2px;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.dg-nav-brand-text-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1;
+}
+
+.dg-nav-brand-title {
+  font-family: 'Playfair Display', 'DM Serif Display', Georgia, serif;
+  font-size: 1.54rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #FFFFFF;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.dg-nav-brand-tagline {
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #E2DAC8;
+  margin-top: 4px;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.dg-navbar-logo-img {
+  height: 54px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  transition: transform 0.2s ease;
+}
+
+.dg-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+
+.dg-nav-link-item {
+  color: var(--dg-text-cream);
+  font-family: var(--font-sans);
+  font-size: 0.96rem;
+  font-weight: 500;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.2s ease, opacity 0.2s ease;
+  opacity: 0.9;
+}
+
+.dg-nav-link-item:hover {
+  opacity: 1;
+  color: var(--dg-gold-light);
+}
+
+/* Hero Main Content */
+.dg-hero-main {
+  position: relative;
+  z-index: 10;
+  max-width: 680px;
+  margin-top: 48px;
+  margin-bottom: 36px;
+}
+
+.dg-hero-headline {
+  font-family: var(--font-serif);
+  font-size: clamp(3.2rem, 5.8vw, 5.2rem);
+  line-height: 1.06;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--dg-text-cream);
+  margin-bottom: 24px;
+}
+
+.dg-hero-headline .gold-text {
+  color: #CFA65B;
+  font-style: normal;
+}
+
+.dg-gold-divider {
+  width: 48px;
+  height: 3px;
+  background-color: #CFA65B;
+  margin-bottom: 22px;
+}
+
+.dg-hero-subtext {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 1.35vw, 1.18rem);
+  line-height: 1.55;
+  color: var(--dg-text-cream);
+  max-width: 520px;
+  font-weight: 400;
+  opacity: 0.92;
+}
+
+/* Hero Portal Cards (2 Prominent Side-by-Side Cards) */
+.dg-hero-cards-row {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  gap: 20px;
+  max-width: 680px;
+}
+
+.dg-portal-card-ref {
+  flex: 1;
+  background-color: #E8E1D1;
+  border-radius: 16px;
+  padding: 24px 22px 20px 22px;
+  color: var(--dg-text-dark);
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 205px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.dg-portal-card-ref:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
+}
+
+.dg-portal-watermark {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 100px;
+  height: 110px;
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+.dg-portal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.dg-portal-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #343E23;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.dg-portal-card-title {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--dg-text-dark);
+  text-transform: uppercase;
+}
+
+.dg-portal-card-desc {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  line-height: 1.42;
+  color: var(--dg-text-muted);
+  margin-bottom: 18px;
+  font-weight: 500;
+  position: relative;
+  z-index: 2;
+}
+
+.dg-portal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  width: fit-content;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.dg-portal-btn-olive {
+  background-color: #343E23;
+  color: #FFFFFF;
+}
+
+.dg-portal-btn-olive:hover {
+  background-color: #262E19;
+}
+
+.dg-portal-btn-gold {
+  background-color: #BCA36B;
+  color: #242D19;
+}
+
+.dg-portal-btn-gold:hover {
+  background-color: #AD9359;
+}
+
+/* ==========================================================================
+   2. WHAT IS DAIRYGUARD? SECTION (Muted Sand / Khaki Background)
+   ========================================================================== */
+.dg-what-section {
+  background-color: var(--dg-khaki-bg);
+  padding: 80px 56px 70px 56px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Botanical leaf watermark top-right */
+.dg-botanical-watermark {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 220px;
+  height: 220px;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.dg-what-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Header */
+.dg-what-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 4vw, 3.2rem);
+  font-weight: 600;
+  color: var(--dg-text-dark);
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.dg-what-gold-divider {
+  width: 42px;
+  height: 3px;
+  background-color: #C59B5A;
+  margin-bottom: 40px;
+}
+
+/* Two-column layout: Left Story Copy + Right 5-Stage Diagram */
+.dg-what-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 36px;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.dg-what-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dg-what-paragraph {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  line-height: 1.58;
+  color: var(--dg-text-dark);
+  font-weight: 500;
+}
+
+/* Right 5-Stage Diagram Box */
+.dg-diagram-box {
+  background-color: #E6E0D2;
+  border-radius: 20px;
+  border: 1px solid var(--dg-khaki-border);
+  padding: 38px 24px 32px 24px;
+  box-shadow: 0 4px 18px rgba(39, 46, 27, 0.05);
+}
+
+.dg-diagram-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+/* Node Container */
+.dg-stage-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+}
+
+.dg-stage-icon-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: #EDE8DC;
+  border: 1.5px solid #3E4A28;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  transition: transform 0.2s ease;
+}
+
+.dg-stage-node:hover .dg-stage-icon-circle {
+  transform: scale(1.06);
+}
+
+/* Special Hero Central Node: DairyGuard */
+.dg-stage-node.is-hero-node .dg-stage-icon-circle {
+  width: 84px;
+  height: 84px;
+  background-color: #2F3B20;
+  border: 2px solid #2F3B20;
+  box-shadow: 0 6px 18px rgba(47, 59, 32, 0.25);
+  margin-bottom: 10px;
+}
+
+.dg-stage-title {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--dg-text-dark);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.dg-stage-line {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--dg-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Connecting Line Between Nodes */
+.dg-connector-segment {
+  flex: 0.8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 36px;
+}
+
+.dg-connector-line {
+  width: 100%;
+  height: 1.5px;
+  border-top: 1.5px dashed #B89758;
+}
+
+.dg-connector-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #B89758;
+}
+
+/* Horizontal 4-Pill Container (COLLECT / DETECT / UNDERSTAND / ACT) */
+.dg-pills-bar {
+  background-color: #E8E2D3;
+  border-radius: 16px;
+  border: 1px solid var(--dg-khaki-border);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 16px 20px;
+  box-shadow: 0 4px 16px rgba(39, 46, 27, 0.04);
+}
+
+.dg-pill-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 16px;
+  position: relative;
+}
+
+.dg-pill-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background-color: var(--dg-khaki-border);
+}
+
+.dg-pill-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: #DDD6C5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--dg-text-dark);
+}
+
+.dg-pill-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.dg-pill-title {
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--dg-text-dark);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.dg-pill-desc {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--dg-text-muted);
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   3. FOOTER (Deep Olive Green with Village Landscape Silhouette)
+   ========================================================================== */
+.dg-footer-ref {
+  background-color: #27331D;
+  color: var(--dg-text-cream);
+  padding: 60px 56px 40px 56px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Rural landscape silhouette at the bottom of the footer */
+.dg-footer-landscape {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 90px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none' fill='%231D2615' opacity='0.75'%3E%3Cpath d='M0 120V85C40 85 80 80 120 80C160 80 190 90 230 90C280 90 320 75 370 75C410 75 440 85 480 85C530 85 570 78 620 78C670 78 710 88 760 88C810 88 850 82 900 82C950 82 990 90 1040 90C1090 90 1140 84 1200 84V120H0Z'/%3E%3Cpath d='M150 80C140 70 145 55 160 55C175 55 180 70 170 80ZM160 55C155 45 165 45 160 55ZM420 75C410 62 415 48 430 48C445 48 450 62 440 75ZM880 82C870 68 875 52 890 52C905 52 910 68 900 82ZM680 78C672 65 678 54 690 54C702 54 708 65 700 78ZM220 90L235 76L250 90ZM230 76V90H240V76Z'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: bottom;
+  background-size: 800px 90px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dg-footer-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 2.2fr 1.2fr 1.2fr 1.2fr 1.6fr;
+  gap: 36px;
+}
+
+.dg-footer-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Brand col */
+.dg-footer-brand-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  background: transparent;
+}
+
+.dg-footer-logo-img {
+  height: 54px;
+  width: auto;
+  object-fit: contain;
+  background: transparent;
+  display: block;
+}
+
+.dg-footer-tagline {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--dg-text-subtle);
+  max-width: 220px;
+}
+
+/* Column Titles */
+.dg-footer-heading {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #D8B57D;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.dg-footer-links-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dg-footer-link-item {
+  color: var(--dg-text-cream);
+  text-decoration: none;
+  font-size: 0.86rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  opacity: 0.9;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dg-footer-link-item:hover {
+  color: var(--dg-gold-light);
+  opacity: 1;
+}
+
+/* Social icons */
+.dg-footer-social-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dg-social-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(245, 239, 228, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dg-text-cream);
+  text-decoration: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.dg-social-circle:hover {
+  border-color: var(--dg-gold-light);
+  background-color: rgba(216, 181, 125, 0.15);
+  color: var(--dg-gold-light);
+}
+
+/* Copyright Column */
+.dg-footer-copyright-col {
+  border-left: 1px solid rgba(245, 239, 228, 0.15);
+  padding-left: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.dg-footer-copyright-text {
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--dg-text-subtle);
+  opacity: 0.85;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+@media (max-width: 1120px) {
+  .dg-what-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  
+  .dg-footer-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+
+  .dg-footer-copyright-col {
+    border-left: none;
+    padding-left: 0;
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 860px) {
+  .dg-hero {
+    padding: 24px 24px 40px 24px;
+  }
+
+  .dg-hero-nav {
+    padding: 8px 16px;
+    border-radius: 10px;
+  }
+
+  .dg-hero-cards-row {
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  .dg-pills-bar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .dg-pill-item:not(:last-child)::after {
+    display: none;
+  }
+
+  .dg-diagram-track {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .dg-connector-segment {
+    transform: rotate(90deg);
+    margin: 10px 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .dg-nav-links {
+    display: none;
+  }
+
+  .dg-pills-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .dg-what-section {
+    padding: 60px 20px;
+  }
+
+  .dg-footer-ref {
+    padding: 50px 20px 30px 20px;
+  }
+}

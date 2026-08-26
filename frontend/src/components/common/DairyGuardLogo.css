@@ -1,0 +1,61 @@
+.dg-brand-logo {
+  display: block;
+  object-fit: contain;
+  height: auto;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  user-select: none;
+}
+
+/* 1. Landing Page Navbar Logo */
+.dg-brand-logo.is-navbar {
+  height: 44px;
+  width: auto;
+  max-width: 220px;
+}
+
+/* 2. Landing Page Footer Logo */
+.dg-brand-logo.is-footer {
+  height: 40px;
+  width: auto;
+  max-width: 200px;
+}
+
+/* 3. Collector Portal Sidebar Logo */
+.dg-brand-logo.is-collector-sidebar {
+  height: 38px;
+  width: auto;
+  max-width: 190px;
+}
+
+/* 4. Government Portal Sidebar Logo */
+.dg-brand-logo.is-gov-sidebar {
+  height: 38px;
+  width: auto;
+  max-width: 190px;
+}
+
+/* 5. Login / Access Modal Logo */
+.dg-brand-logo.is-modal {
+  height: 52px;
+  width: auto;
+  max-width: 260px;
+  margin: 0 auto;
+}
+
+/* 6. Default fallback */
+.dg-brand-logo.is-default {
+  height: 42px;
+  width: auto;
+}
+
+@media (max-width: 768px) {
+  .dg-brand-logo.is-navbar {
+    height: 38px;
+    max-width: 180px;
+  }
+
+  .dg-brand-logo.is-modal {
+    height: 44px;
+    max-width: 220px;
+  }
+}

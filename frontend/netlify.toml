@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Set VITE_API_BASE_URL in Netlify's Site settings -> Environment variables
+# to your deployed backend URL, e.g. https://dairyguard-backend.onrender.com

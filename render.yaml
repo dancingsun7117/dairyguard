@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: dairyguard-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: "pip install -r ../requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false        # paste your Postgres connection string here (e.g. from Neon/Supabase/Render Postgres)
+      - key: CORS_ORIGINS
+        sync: false        # e.g. https://your-frontend.netlify.app

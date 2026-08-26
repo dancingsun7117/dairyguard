@@ -1,0 +1,17 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+gunicorn>=23.0
+python-multipart>=0.0.9
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.5
+networkx>=3.3
+xgboost>=2.1
+joblib>=1.4
+sqlalchemy>=2.0
+psycopg2-binary>=2.9
+torch>=2.3
+transformers>=4.45
+chronos-forecasting>=1.5
+PyJWT>=2.9
+openpyxl>=3.1
