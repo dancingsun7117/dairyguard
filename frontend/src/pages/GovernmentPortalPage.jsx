@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import MaharashtraMap from '../components/maps/MaharashtraMap';
 import {
   LayoutDashboard,
   ShieldAlert,
@@ -139,6 +140,15 @@ export const GovernmentPortalPage = () => {
             >
               <Building2 className="gov-nav-icon" />
               <span>Collection Centres</span>
+            </button>
+
+            <button
+              type="button"
+              className={`gov-nav-btn ${activeTab === 'riskmap' ? 'is-active' : ''}`}
+              onClick={() => setActiveTab('riskmap')}
+            >
+              <ShieldAlert className="gov-nav-icon" />
+              <span>Risk Map</span>
             </button>
 
             <button
@@ -429,45 +439,17 @@ export const GovernmentPortalPage = () => {
                 </div>
               </div>
 
-              {/* Maharashtra Geographic Risk Visualisation */}
+              {/* Maharashtra Geographic Risk Visualisation - live district data, real boundaries */}
               <div className="gov-card">
                 <div className="gov-card-header">
                   <div>
-                    <h2 className="gov-card-title">Risk → GeoPandas</h2>
-                    <p className="gov-card-subtitle">Geographic risk visualisation for Maharashtra.</p>
+                    <h2 className="gov-card-title">Risk Map</h2>
+                    <p className="gov-card-subtitle">Live geographic risk visualisation for Maharashtra, built from your uploaded dataset. Hover a district for details.</p>
                   </div>
                 </div>
 
-                <div className="gov-map-container">
-                  <svg viewBox="0 0 560 390" className="gov-map-svg" aria-label="Maharashtra geographic risk map">
-                    <path
-                      d="M150 32 L255 20 L335 55 L420 45 L495 100 L468 168 L520 215 L474 270 L488 340 L400 356 L330 332 L278 365 L205 330 L165 278 L98 260 L120 205 L76 164 L116 116 Z"
-                      fill="#EDF0ED"
-                      stroke="#65736A"
-                      strokeWidth="2"
-                    />
-                    <g stroke="#F3F5F3" strokeWidth="3">
-                      <path d="M151 33 L184 110 L120 205 L205 213 L205 330" fill="#7FA56F" />
-                      <path d="M184 110 L255 20 L285 130 L205 213" fill="#D9BD49" />
-                      <path d="M285 130 L335 55 L420 45 L400 150 L350 205" fill="#D9BD49" />
-                      <path d="M400 150 L468 168 L520 215 L435 245 L350 205" fill="#E1A13B" />
-                      <path d="M350 205 L435 245 L474 270 L400 300 L330 332 L278 270" fill="#96362C" />
-                      <path d="M278 270 L330 332 L278 365 L205 330 L205 213" fill="#E1A13B" />
-                      <path d="M205 213 L278 270 L205 330 L165 278 L98 260 L120 205" fill="#7FA56F" />
-                      <path d="M120 205 L205 213 L184 110 L116 116 L76 164" fill="#7FA56F" />
-                    </g>
-                    <g fontFamily="Inter, sans-serif" fontSize="11" fill="#27332C" fontWeight="700">
-                      <text x="125" y="175">Nashik</text>
-                      <text x="210" y="95">Nandurbar</text>
-                      <text x="340" y="95">Buldhana</text>
-                      <text x="417" y="185">Nagpur</text>
-                      <text x="382" y="285">Pune</text>
-                      <text x="215" y="278">Satara</text>
-                      <text x="130" y="235">Kolhapur</text>
-                      <text x="285" y="235">Ahmednagar</text>
-                    </g>
-                    <circle cx="382" cy="285" r="8" fill="#96362C" stroke="#FFFFFF" strokeWidth="2.5" />
-                  </svg>
+                <div style={{ marginTop: '1rem' }}>
+                  <MaharashtraMap />
                 </div>
 
                 <div className="gov-map-legend-row">
@@ -485,7 +467,7 @@ export const GovernmentPortalPage = () => {
                   </div>
                   <div className="gov-map-legend-item">
                     <span className="gov-map-legend-color" style={{ backgroundColor: '#96362C' }}></span>
-                    <span>Critical (Pune Jurisdiction)</span>
+                    <span>Critical</span>
                   </div>
                 </div>
               </div>
@@ -594,6 +576,28 @@ export const GovernmentPortalPage = () => {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            </div>
+          )}
+
+
+
+          {/* ================================================================
+              PAGE 5B: RISK MAP
+              ================================================================ */}
+          {activeTab === 'riskmap' && (
+            <div>
+              <div className="gov-page-header-row">
+                <div>
+                  <div className="gov-eyebrow">05 · Geospatial</div>
+                  <h1 className="gov-page-title">District Risk Map</h1>
+                  <p className="gov-page-subtitle">
+                    Hover a district to see farms, animals, milk received, and risk score from your live dataset.
+                  </p>
+                </div>
+              </div>
+              <div style={{ marginTop: '1rem' }}>
+                <MaharashtraMap />
               </div>
             </div>
           )}
