@@ -59,7 +59,7 @@ import {
 import RiskDisclaimer from '../components/common/RiskDisclaimer';
 import DairyGuardLogo from '../components/common/DairyGuardLogo';
 import '../components/collector/CollectorPortal.css';
-import { getOverview, getTransactions, getRiskFlags, getAnomalies, getFarmers, getClusters, getProcurementPerformance, getForecast, uploadDataset, logout as apiLogout } from '../api/dairyguardApi';
+import { getOverview, getTransactions, getRiskFlags, getAnomalies, getFarmers, getClusters, getProcurementPerformance, getForecast, uploadDataset, logout as apiLogout, getUser } from '../api/dairyguardApi';
 
 /* ==========================================================================
    PROTOTYPE & DEMO DATA BOUNDARIES (For Demo / Hackathon / Backend Integration)
@@ -173,8 +173,41 @@ export const CollectorPortalPage = () => {
   const [sampleTransactions,setSampleTransactions]=useState([]);
   const [farmerDirectoryData,setFarmerDirectoryData]=useState([]);
   const [liveError,setLiveError]=useState(''); const [liveLoading,setLiveLoading]=useState(false); const [hasLiveData,setHasLiveData]=useState(false);
+  const [heroStats,setHeroStats]=useState({riskScore:0,riskLevel:'—',highRiskFlags:0,todayVolume:0,todayVsYesterdayPct:0,activeFarmers:0,farmersVsWeekPct:0,activeAlerts:0,highAlerts:0,mediumAlerts:0,lowAlerts:0,qualityPct:0,qualityVsYesterdayPct:0});
+  const currentUser=getUser();
+  const currentCentreId=(currentUser?.collector_id || currentUser?.identifier || '—');
+  const currentDistrict=(currentUser?.district || 'All districts');
   const clearLiveData=()=>{setProcurementHeroData([]);setDailyCollectionTrendData([]);setCapacityUtilisationTrendData([]);setProcurementTableData([]);setRiskScoreTrendData([]);setFlagTypeBreakdownData([]);setIsolationForestNormal([]);setIsolationForestAnomaly([]);setIsolationForestRecordsTable([]);setNetworkNormal([]);setNetworkAnomaly([]);setNetworkClusterTable([]);setChronosBoltForecastData([]);setChronosBoltScheduleTable([]);setQualityTrendsData([]);setSampleTransactions([]);setFarmerDirectoryData([]);setHasLiveData(false);};
-  const loadLive=async()=>{setLiveLoading(true);setLiveError('');try{const [overview,tx,flags,anoms,farmers,clusters,proc,forecast]=await Promise.all([getOverview(),getTransactions(1000),getRiskFlags(),getAnomalies(),getFarmers(),getClusters(),getProcurementPerformance('All',365),getForecast('All',14)]);
+  const loadLive=async()=>{setLiveLoading(true);setLiveError('');try{
+    const results=await Promise.allSettled([getOverview(),getTransactions(1000),getRiskFlags(),getAnomalies(),getFarmers(),getClusters(),getProcurementPerformance('All',365),getForecast('All',14)]);
+    const [overviewR,txR,flagsR,anomsR,farmersR,clustersR,procR,forecastR]=results;
+    const failed=results.filter(r=>r.status==='rejected');
+    if(overviewR.status==='rejected')throw overviewR.reason||new Error('Failed to load overview');
+    const overview=overviewR.value,tx=txR.status==='fulfilled'?txR.value:[],flags=flagsR.status==='fulfilled'?flagsR.value:[],anoms=anomsR.status==='fulfilled'?anomsR.value:[],farmers=farmersR.status==='fulfilled'?farmersR.value:[],clusters=clustersR.status==='fulfilled'?clustersR.value:[],proc=procR.status==='fulfilled'?procR.value:[],forecast=forecastR.status==='fulfilled'?forecastR.value:{historical:[],forecast:[]};
+    if(failed.length)console.warn('Some live data sources failed to load:',failed.map(f=>f.reason?.message||f.reason));
+    {
+      const m=overview.metrics||{};
+      const breakdown=overview.riskBreakdown||[];
+      const countFor=(lvl)=>breakdown.find(b=>String(b.risk_level).toLowerCase()===lvl)?.count||0;
+      const high=countFor('high'),medium=countFor('medium'),low=countFor('low');
+      const totalRows=high+medium+low;
+      const trend=overview.dailyTrend||[];
+      const sortedTrend=trend.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+      const lastDay=sortedTrend[sortedTrend.length-1];
+      const prevDay=sortedTrend[sortedTrend.length-2];
+      const todayVolume=lastDay?Number(lastDay.volume||0):Number(m.totalProcurementVolume||0);
+      const todayVsYesterdayPct=(lastDay&&prevDay&&prevDay.volume)?Math.round(((lastDay.volume-prevDay.volume)/prevDay.volume)*1000)/10:0;
+      const avgRisk=totalRows?Math.round(((medium*0.5+high*1)/totalRows)*100):0;
+      const riskLevel=avgRisk>=70?'HIGH RISK':avgRisk>=35?'MEDIUM RISK':'LOW RISK';
+      const qualityPct=totalRows?Math.round((low/totalRows)*100):100;
+      setHeroStats({
+        riskScore:avgRisk,riskLevel,highRiskFlags:Number(m.highRiskEntities||high||0),
+        todayVolume:Math.round(todayVolume*10)/10,todayVsYesterdayPct,
+        activeFarmers:Number(m.farmersMonitored||farmers.length||0),farmersVsWeekPct:0,
+        activeAlerts:Number(m.activeAnomalies||0),highAlerts:high,mediumAlerts:medium,lowAlerts:low,
+        qualityPct,qualityVsYesterdayPct:0,
+      });
+    }
     const rows=proc.map(x=>({date:String(x.date),actual:+x.actual||0,expected:+x.expectedCapacity||0,rangeMin:Math.max(0,(+x.expectedCapacity||0)*.85),rangeMax:(+x.expectedCapacity||0)*1.15,isAnomaly:!!x.isAnomaly})); setProcurementHeroData(rows.slice(-7)); setDailyCollectionTrendData(rows.slice(-30).map(x=>({day:x.date,volume:x.actual}))); setCapacityUtilisationTrendData(rows.slice(-30).map(x=>({day:x.date,util:Math.round(x.actual/(x.expected||1)*100)}))); setProcurementTableData(rows.slice().reverse().map(x=>({date:x.date,collection:`${x.actual.toFixed(1)} L`,expected:`${x.expected.toFixed(1)} L`,util:`${Math.round(x.actual/(x.expected||1)*100)}%`,uploadTime:'Live dataset',status:x.isAnomaly?'Flagged':'Up to date'})));
     const mapped=tx.map((x,i)=>({id:x.batch_id||`TRX-${i+1}`,date:x.date||'',farmerId:String(x.farmer_id||'Unknown'),farmerName:String(x.farmer_id||'Unknown'),quantity:`${Number(x.volume_liters||0).toFixed(1)} L`,fat:`${Number(x.fat_pct||0).toFixed(1)}%`,snf:'—',temp:`${Number(x.temperature_c||0).toFixed(1)}°C`,riskScore:Math.round((x.final_risk_score||0)*100),primaryFlag:x.capacity_mismatch_flag?'Capacity mismatch':x.possible_adulteration_flag?'Quality deviation':x.duplicate_flag?'Duplicate':x.model_predicted_anomaly_final?'Model anomaly':'Normal',status:x.risk_level==='High'?'Under Review':x.risk_level==='Medium'?'New':'Verified',severity:x.risk_level,signals:[]})); setSampleTransactions(mapped);
     setRiskScoreTrendData((overview.dailyTrend||[]).map(x=>({date:String(x.date),score:Math.round((x.risk||0)*100)}))); setFlagTypeBreakdownData([{flag:'Model Anomaly',count:anoms.length},{flag:'Capacity Mismatch',count:tx.filter(x=>x.capacity_mismatch_flag).length},{flag:'Quality Deviation',count:tx.filter(x=>x.possible_adulteration_flag).length},{flag:'Duplicate',count:tx.filter(x=>x.duplicate_flag).length}]);
@@ -324,9 +357,9 @@ export const CollectorPortalPage = () => {
         <div className="dg-c-sidebar-bottom">
           <div className="dg-c-sidebar-centre-card">
             <div className="dg-c-sidebar-centre-label">COLLECTION CENTRE</div>
-            <div className="dg-c-sidebar-centre-id">CC-MH-0247</div>
+            <div className="dg-c-sidebar-centre-id">{currentCentreId}</div>
             <div className="dg-c-sidebar-centre-geo">
-              <span>📍 Pune, Maharashtra</span>
+              <span>📍 {currentDistrict}</span>
             </div>
           </div>
 
@@ -350,9 +383,9 @@ export const CollectorPortalPage = () => {
           <div className="dg-c-topbar-left">
             <div className="dg-c-pill-select">
               <span>📍</span>
-              <span>CC-MH-0247</span>
+              <span>{currentCentreId}</span>
               <span>•</span>
-              <span>Pune, Maharashtra</span>
+              <span>{currentDistrict}</span>
               <ChevronDown size={14} style={{ color: '#6B7460', marginLeft: 2 }} />
             </div>
 
@@ -437,13 +470,13 @@ export const CollectorPortalPage = () => {
                   <div>
                     <div className="dg-c-risk-top-label">RISK SCORE</div>
                     <div className="dg-c-risk-score-wrap">
-                      <span className="dg-c-risk-score-num">72</span>
+                      <span className="dg-c-risk-score-num">{heroStats.riskScore}</span>
                       <span className="dg-c-risk-score-denom">/ 100</span>
                     </div>
-                    <div className="dg-c-risk-badge">MEDIUM RISK</div>
+                    <div className="dg-c-risk-badge">{heroStats.riskLevel}</div>
                     <p className="dg-c-risk-flags-note">
                       <span>⚠</span>
-                      <span>2 active high-risk flags</span>
+                      <span>{heroStats.highRiskFlags} active high-risk flags</span>
                     </p>
                   </div>
 
@@ -468,8 +501,8 @@ export const CollectorPortalPage = () => {
                       <div className="dg-c-metric-icon-circle is-green"><Milk size={16} /></div>
                       <span className="dg-c-metric-label">TODAY'S COLLECTION</span>
                     </div>
-                    <div className="dg-c-metric-val">1,245 <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>L</span></div>
-                    <div className="dg-c-metric-sub is-green">↑ 8.3% <span style={{ color: '#6B7460', fontWeight: 500 }}>vs yesterday</span></div>
+                    <div className="dg-c-metric-val">{heroStats.todayVolume.toLocaleString()} <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>L</span></div>
+                    <div className="dg-c-metric-sub is-green">{heroStats.todayVsYesterdayPct>=0?'↑':'↓'} {Math.abs(heroStats.todayVsYesterdayPct)}% <span style={{ color: '#6B7460', fontWeight: 500 }}>vs yesterday</span></div>
                   </div>
 
                   <div className="dg-c-metric-item">
@@ -477,8 +510,8 @@ export const CollectorPortalPage = () => {
                       <div className="dg-c-metric-icon-circle is-green"><Users size={16} /></div>
                       <span className="dg-c-metric-label">ACTIVE FARMERS</span>
                     </div>
-                    <div className="dg-c-metric-val">86</div>
-                    <div className="dg-c-metric-sub is-green">↑ 5.2% <span style={{ color: '#6B7460', fontWeight: 500 }}>vs last 7 days</span></div>
+                    <div className="dg-c-metric-val">{heroStats.activeFarmers}</div>
+                    <div className="dg-c-metric-sub is-green">Live from current dataset <span style={{ color: '#6B7460', fontWeight: 500 }}></span></div>
                   </div>
 
                   <div className="dg-c-metric-item">
@@ -486,11 +519,11 @@ export const CollectorPortalPage = () => {
                       <div className="dg-c-metric-icon-circle is-orange"><Bell size={16} /></div>
                       <span className="dg-c-metric-label">ACTIVE ALERTS</span>
                     </div>
-                    <div className="dg-c-metric-val">7</div>
+                    <div className="dg-c-metric-val">{heroStats.activeAlerts}</div>
                     <div className="dg-c-alert-dots-row">
-                      <span style={{ color: '#C03728' }}>2 High</span>
-                      <span style={{ color: '#C59B5A' }}>• 3 Medium</span>
-                      <span style={{ color: '#2B5C8F' }}>• 2 Low</span>
+                      <span style={{ color: '#C03728' }}>{heroStats.highAlerts} High</span>
+                      <span style={{ color: '#C59B5A' }}>• {heroStats.mediumAlerts} Medium</span>
+                      <span style={{ color: '#2B5C8F' }}>• {heroStats.lowAlerts} Low</span>
                     </div>
                   </div>
 
@@ -499,8 +532,8 @@ export const CollectorPortalPage = () => {
                       <div className="dg-c-metric-icon-circle is-blue"><Droplets size={16} /></div>
                       <span className="dg-c-metric-label">QUALITY STATUS</span>
                     </div>
-                    <div className="dg-c-metric-val">93<span style={{ fontSize: '1.1rem', fontWeight: 600 }}>%</span></div>
-                    <div className="dg-c-metric-sub is-green">Good <span style={{ color: '#6B7460', fontWeight: 500 }}>vs yesterday: 91%</span></div>
+                    <div className="dg-c-metric-val">{heroStats.qualityPct}<span style={{ fontSize: '1.1rem', fontWeight: 600 }}>%</span></div>
+                    <div className="dg-c-metric-sub is-green">{heroStats.qualityPct>=70?'Good':heroStats.qualityPct>=40?'Fair':'Needs review'} <span style={{ color: '#6B7460', fontWeight: 500 }}>share of low-risk records</span></div>
                   </div>
                 </div>
               </div>
