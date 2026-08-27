@@ -88,6 +88,20 @@ def _trend_fallback_forecast(g,days):
   preds.append(pred);lowers.append(max(0.0,pred-band));uppers.append(pred+band)
  return preds,lowers,uppers
 
+_CHRONOS_PIPELINE=None
+_CHRONOS_LOAD_ERROR=None
+def _get_chronos_pipeline():
+ global _CHRONOS_PIPELINE,_CHRONOS_LOAD_ERROR
+ if _CHRONOS_PIPELINE is not None or _CHRONOS_LOAD_ERROR is not None:
+  return _CHRONOS_PIPELINE,_CHRONOS_LOAD_ERROR
+ try:
+  import torch
+  from chronos import ChronosBoltPipeline
+  _CHRONOS_PIPELINE=ChronosBoltPipeline.from_pretrained(str(CHRONOS_MODEL),device_map='cpu',torch_dtype=torch.float32,local_files_only=True)
+ except Exception as e:
+  _CHRONOS_LOAD_ERROR=str(e)
+ return _CHRONOS_PIPELINE,_CHRONOS_LOAD_ERROR
+
 @app.get('/api/forecast')
 def forecast(district:str='All',days:int=14,u=Depends(allow('government','collector'))):
  if not 1<=days<=30:raise HTTPException(422,'days must be 1..30')
@@ -96,8 +110,9 @@ def forecast(district:str='All',days:int=14,u=Depends(allow('government','collec
  model_used='chronos-bolt-finetuned';chronos_error=None
  try:
   import torch
-  from chronos import ChronosBoltPipeline
-  p=ChronosBoltPipeline.from_pretrained(str(CHRONOS_MODEL),device_map='cpu',torch_dtype=torch.float32,local_files_only=True);q,_=p.predict_quantiles(torch.tensor(g.volume_liters.to_numpy(dtype=np.float32)).unsqueeze(0),prediction_length=days,quantile_levels=[.1,.5,.9]);a,b,c=[q[0,:,i].detach().cpu().numpy() for i in range(3)]
+  pipe,load_err=_get_chronos_pipeline()
+  if pipe is None:raise RuntimeError(load_err or 'Chronos model unavailable')
+  q,_=pipe.predict_quantiles(torch.tensor(g.volume_liters.to_numpy(dtype=np.float32)).unsqueeze(0),prediction_length=days,quantile_levels=[.1,.5,.9]);a,b,c=[q[0,:,i].detach().cpu().numpy() for i in range(3)]
  except Exception as e:
   chronos_error=str(e);model_used='trend-seasonal-fallback';a,b,c=_trend_fallback_forecast(g,days)
  f=pd.date_range(g.date.iloc[-1]+pd.Timedelta(days=1),periods=days);return {'model':model_used,'chronos_unavailable_reason':chronos_error,'historical':[{'date':str(r.date.date()),'value':float(r.volume_liters)} for _,r in g.iterrows()],'forecast':[{'date':x.date().isoformat(),'lower':max(0,float(a[i])),'predicted':max(0,float(b[i])),'upper':max(0,float(c[i]))} for i,x in enumerate(f)]}
