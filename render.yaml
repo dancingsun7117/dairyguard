@@ -13,3 +13,11 @@ services:
         sync: false        # paste your Postgres connection string here (e.g. from Neon/Supabase/Render Postgres)
       - key: CORS_ORIGINS
         sync: false        # e.g. https://your-frontend.netlify.app
+      - key: CHRONOS_ENABLED
+        sync: false        # set to "true" in the Render dashboard to turn on the real Chronos-Bolt model.
+                            # WARNING: free-tier Render web services get 512MB RAM. torch + transformers +
+                            # a ~48M-param model may not fit. Watch the deploy logs for an OOM kill after
+                            # setting this to true — if it crashes, either upgrade the instance type or
+                            # leave this false to keep using the trend-seasonal fallback forecast.
+      - key: CHRONOS_HF_REPO
+        sync: false        # optional override; defaults to AnonymousCatX/Chronos-Bolt_DairyGuard in code

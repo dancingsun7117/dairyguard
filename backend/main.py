@@ -5,7 +5,7 @@ from datetime import datetime,timedelta,timezone
 import pandas as pd,numpy as np,jwt,os
 from db import *
 from services.pipeline import run,summaries
-from config import CHRONOS_MODEL,JWT_SECRET
+from config import CHRONOS_MODEL,CHRONOS_HF_REPO,JWT_SECRET
 app=FastAPI(title='DairyGuard Live API',version='2.0.0')
 _origins=os.getenv('CORS_ORIGINS','http://localhost:5173,http://127.0.0.1:5173').split(',')
 app.add_middleware(CORSMiddleware,allow_origins=[o.strip() for o in _origins if o.strip()],allow_credentials=True,allow_methods=['*'],allow_headers=['*'])
@@ -67,6 +67,27 @@ def endpoint(kind):
   return {'data':rec(d.head(limit))}
  return f
 app.get('/api/risk-flags')(endpoint('risk'));app.get('/api/anomalies')(endpoint('anomaly'));app.get('/api/transactions')(endpoint('transactions'));app.get('/api/districts')(endpoint('districts'));app.get('/api/farmers')(endpoint('farmers'));app.get('/api/mass-balance')(endpoint('mass_balance'));app.get('/api/collection-centres')(endpoint('centres'));app.get('/api/network/clusters')(endpoint('clusters'))
+@app.get('/api/district-risk')
+def district_risk(u=Depends(allow('government','collector'))):
+ d=data(u)
+ g=d.groupby('district',dropna=False).agg(
+  farms=('farmer_id','nunique'),
+  animals=('declared_animals','sum'),
+  milk_received_liters=('volume_liters','sum'),
+  risk_score=('final_risk_score','mean'),
+  active_risk_signals=('risk_level',lambda x:int((x!='Low').sum())),
+ ).reset_index()
+ out=[]
+ for _,r in g.iterrows():
+  out.append({
+   'district':str(r.district),
+   'farms':int(r.farms),
+   'animals':int(r.animals) if pd.notna(r.animals) else 0,
+   'milk_received_liters':round(float(r.milk_received_liters),1),
+   'risk_score':round(float(r.risk_score)*100,1),
+   'active_risk_signals':int(r.active_risk_signals),
+  })
+ return {'districts':out}
 @app.get('/api/procurement-performance')
 def proc(district:str='All',days:int=30,u=Depends(allow('government','collector'))):
  d=data(u);d=d if district.lower()=='all' else d[d.district.astype(str).str.lower()==district.lower()];g=d.groupby('date').agg(actual=('volume_liters','sum'),expectedCapacity=('expected_daily_volume','sum')).reset_index().tail(min(max(days,1),365));return {'data':[{'date':str(r.date),'actual':float(r.actual),'expectedCapacity':float(r.expectedCapacity),'utilization':float(r.actual/r.expectedCapacity*100) if r.expectedCapacity else 0,'variance':float(r.actual-r.expectedCapacity),'isAnomaly':bool(abs(r.actual-r.expectedCapacity)>max(1,r.expectedCapacity*.3))} for _,r in g.iterrows()]}
@@ -90,14 +111,23 @@ def _trend_fallback_forecast(g,days):
 
 _CHRONOS_PIPELINE=None
 _CHRONOS_LOAD_ERROR=None
+_CHRONOS_ENABLED=os.getenv('CHRONOS_ENABLED','false').strip().lower() in ('1','true','yes','on')
 def _get_chronos_pipeline():
  global _CHRONOS_PIPELINE,_CHRONOS_LOAD_ERROR
+ if not _CHRONOS_ENABLED:
+  return None,'Chronos disabled on this deployment (insufficient memory on free-tier instance; set CHRONOS_ENABLED=true on a larger instance to enable)'
  if _CHRONOS_PIPELINE is not None or _CHRONOS_LOAD_ERROR is not None:
   return _CHRONOS_PIPELINE,_CHRONOS_LOAD_ERROR
  try:
   import torch
   from chronos import ChronosBoltPipeline
-  _CHRONOS_PIPELINE=ChronosBoltPipeline.from_pretrained(str(CHRONOS_MODEL),device_map='cpu',torch_dtype=torch.float32,local_files_only=True)
+  weights_file=CHRONOS_MODEL/'model.safetensors'
+  # A real safetensors file is ~180MB+. A stray Git LFS pointer that never got
+  # pulled is ~130 bytes of text. Detect that case explicitly instead of letting
+  # it crash deep inside torch.load with a confusing error.
+  use_local=weights_file.exists() and weights_file.stat().st_size>10_000_000
+  source=str(CHRONOS_MODEL) if use_local else CHRONOS_HF_REPO
+  _CHRONOS_PIPELINE=ChronosBoltPipeline.from_pretrained(source,device_map='cpu',torch_dtype=torch.float32,local_files_only=use_local)
  except Exception as e:
   _CHRONOS_LOAD_ERROR=str(e)
  return _CHRONOS_PIPELINE,_CHRONOS_LOAD_ERROR
@@ -109,9 +139,9 @@ def forecast(district:str='All',days:int=14,u=Depends(allow('government','collec
  if len(g)<2:raise HTTPException(422,'Not enough history')
  model_used='chronos-bolt-finetuned';chronos_error=None
  try:
-  import torch
   pipe,load_err=_get_chronos_pipeline()
   if pipe is None:raise RuntimeError(load_err or 'Chronos model unavailable')
+  import torch
   q,_=pipe.predict_quantiles(torch.tensor(g.volume_liters.to_numpy(dtype=np.float32)).unsqueeze(0),prediction_length=days,quantile_levels=[.1,.5,.9]);a,b,c=[q[0,:,i].detach().cpu().numpy() for i in range(3)]
  except Exception as e:
   chronos_error=str(e);model_used='trend-seasonal-fallback';a,b,c=_trend_fallback_forecast(g,days)
